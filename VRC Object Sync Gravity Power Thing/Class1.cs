@@ -127,7 +127,7 @@ public class Mod : MelonMod
                         RaycastPointObject.Value.transform.position = Vector3.Lerp(Camera.current.transform.position, RaycastPointObject.Value.transform.position, .9f);
                     }
                 }
-                if (Input.GetMouseButton(0))
+                if (Input.GetMouseButton(1))
                 {
                     if (GrabbedObjects.Count == 0)
                     {
