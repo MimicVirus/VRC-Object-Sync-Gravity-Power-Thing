@@ -7,3 +7,7 @@ DESKTOP ONLY.
 # CONTROLS
 
 Controls are printed in the console.
+
+# DISCLAIMER
+
+DO NOT USE MY CODE FOR YOUR OWN CLIENTS.
