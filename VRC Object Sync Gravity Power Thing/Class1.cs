@@ -23,12 +23,12 @@ public class Mod : MelonMod
     {
         MelonLogger.Msg("\n\n" +
             "===== CONTROLS =====\n\n" +
-            "[Left CTRL + Left SHIFT + 0] To activate mod, left click for selecting and hold to do the cool stuff.\n" +
-            "[Left CTRL + Left SHIFT + 1] To toggle launch option (move direction after letting go of it)\n" +
-            "[Left CTRL + Left SHIFT + 2] To toggle smooth movement.\n" +
-            "[Left CTRL + Left SHIFT + 3] Emergency clear grabbed objects.\n" +
-            "[Left CTRL + Left SHIFT + 4] Reset ball size.\n" +
-            "[Left CTRL + Left SHIFT + 5] to toggle rotation with head.\n" +
+            "[Return (Enter) + 0] To activate mod, left click for selecting and hold to do the cool stuff.\n" +
+            "[Return (Enter) + 1] To toggle launch option (move direction after letting go of it)\n" +
+            "[Return (Enter) + 2] To toggle smooth movement.\n" +
+            "[Return (Enter) + 3] Emergency clear grabbed objects.\n" +
+            "[Return (Enter) + 4] Reset ball size.\n" +
+            "[Return (Enter) + 5] to toggle rotation with head.\n" +
             "[- or =] to change orb size.\n" +
             "Scroll wheel to drag in and out.\n\n");
     }
@@ -57,7 +57,7 @@ public class Mod : MelonMod
                 material.color = color;
                 SelectSphere.GetComponent<Renderer>().material = material;
             }
-            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift))
+            if (Input.GetKey(KeyCode.Return))
             {
                 bool Print = false;
                 var MSG = "";
