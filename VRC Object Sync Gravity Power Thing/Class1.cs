@@ -59,6 +59,9 @@ public class Mod : MelonMod
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.Alpha1))
             {
                 LaunchToggle = !LaunchToggle;
+                var MSG = "";
+                switch (LaunchToggle) { case true: MSG = $"Launch Toggle Enabled."; break; case false: MSG = $"Launch Toggle Disabled."; break; }
+                MelonLogger.Msg(MSG);
             }
             if (Input.GetKeyDown(KeyCode.Minus))
             {
