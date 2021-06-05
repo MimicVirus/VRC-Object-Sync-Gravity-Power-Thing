@@ -1,5 +1,7 @@
 ﻿using MelonLoader;
+using System.Collections.Generic;
 using UnityEngine;
+using VRC.SDK3.Components;
 using VRC.SDKBase;
 using VRCSDK2;
 
@@ -10,14 +12,25 @@ public class Mod : MelonMod
 {
     private bool Toggle = false;
     private bool LaunchToggle = true;
-    private GameObject GrabbedObject;
-    private GameObject RaycastPointObject;
+    private bool SmoothToggle = true;
+    private bool RotateWithHead = true;
+    private List<GameObject> GrabbedObjects = new List<GameObject>();
+    private Dictionary<GameObject, GameObject> RaycastPointObjects = new Dictionary<GameObject, GameObject>();
     private GameObject SelectSphere;
     private float SelectSphereMultiplier = 5;
 
     public override void OnApplicationStart()
     {
-        MelonLogger.Msg("\n\n===== CONTROLS =====\n\n[Left CTRL + Left SHIFT + `] To activate mod, left click for selecting and hold to do the cool shit.\n[Left CTRL + Left SHIFT + 1] To toggle launch option (move direction after letting go of it)\n- and = to change orb size.\nScroll wheel to drag in and out.\n\n");
+        MelonLogger.Msg("\n\n" +
+            "===== CONTROLS =====\n\n" +
+            "[Left CTRL + Left SHIFT + `] To activate mod, left click for selecting and hold to do the cool shit.\n" +
+            "[Left CTRL + Left SHIFT + 1] To toggle launch option (move direction after letting go of it)\n" +
+            "[Left CTRL + Left SHIFT + 2] To toggle smooth movement.\n" +
+            "[Left CTRL + Left SHIFT + 3] Emergency clear grabbed objects.\n" +
+            "[Left CTRL + Left SHIFT + 4] Reset ball size.\n" +
+            "[Left CTRL + Left SHIFT + 5] to toggle rotation with head.\n" +
+            "[- or =] to change orb size.\n" +
+            "Scroll wheel to drag in and out.\n\n");
     }
 
     public override void OnUpdate()
@@ -44,111 +57,134 @@ public class Mod : MelonMod
                 material.color = color;
                 SelectSphere.GetComponent<Renderer>().material = material;
             }
-            if (RaycastPointObject == null)
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift))
             {
-                RaycastPointObject = new GameObject();
-                RaycastPointObject.transform.parent = Camera.current.transform;
-            }
-            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.BackQuote))
-            {
-                Toggle = !Toggle;
+                bool Print = false;
                 var MSG = "";
-                switch (Toggle) { case true: MSG = $"Mod Enabled."; break; case false: MSG = $"Mod Disabled."; break; }
-                MelonLogger.Msg(MSG);
+                if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.BackQuote))
+                {
+                    Toggle = !Toggle;
+                    switch (Toggle) { case true: MSG = $"Mod Enabled."; break; case false: MSG = $"Mod Disabled."; break; }
+                    Print = true;
+                }
+                if (Input.GetKeyDown(KeyCode.Alpha1))
+                {
+                    LaunchToggle = !LaunchToggle;
+                    switch (LaunchToggle) { case true: MSG = $"Launch Toggle Enabled."; break; case false: MSG = $"Launch Toggle Disabled."; break; }
+                    Print = true;
+                }
+                if (Input.GetKeyDown(KeyCode.Alpha2))
+                {
+                    SmoothToggle = !SmoothToggle;
+                    switch (SmoothToggle) { case true: MSG = $"Smooth Toggle Enabled."; break; case false: MSG = $"Smooth Toggle Disabled."; break; }
+                    Print = true;
+                }
+                if (Input.GetKeyDown(KeyCode.Alpha3))
+                {
+                    GrabbedObjects.Clear();
+                    RaycastPointObjects.Clear();
+                }
+                if (Input.GetKeyDown(KeyCode.Alpha4))
+                {
+                    SelectSphereMultiplier = 5;
+                }
+                if (Input.GetKeyDown(KeyCode.Alpha5))
+                {
+                    RotateWithHead = !RotateWithHead;
+                }
+                if (Print)
+                {
+                    MelonLogger.Msg(MSG);
+                }
             }
-            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.Alpha1))
+            if (Toggle)
             {
-                LaunchToggle = !LaunchToggle;
-                var MSG = "";
-                switch (LaunchToggle) { case true: MSG = $"Launch Toggle Enabled."; break; case false: MSG = $"Launch Toggle Disabled."; break; }
-                MelonLogger.Msg(MSG);
-            }
-            if (Input.GetKeyDown(KeyCode.Minus))
-            {
-                if (Toggle)
+                if (Input.GetKeyDown(KeyCode.Minus))
                 {
                     SelectSphereMultiplier *= .5f;
                 }
-            }
-            if (Input.GetKeyDown(KeyCode.Equals))
-            {
-                if (Toggle)
+                if (Input.GetKeyDown(KeyCode.Equals))
                 {
-                    SelectSphereMultiplier *= 1.5f;
+                    SelectSphereMultiplier *= 2f;
                 }
-            }
-            if (Input.GetAxis("Mouse ScrollWheel") > 0f)
-            {
-                if (Toggle)
+                if (Input.GetAxis("Mouse ScrollWheel") > 0f)
                 {
-                    RaycastPointObject.transform.position += Camera.current.transform.forward * (Vector3.Distance(Camera.current.transform.position, RaycastPointObject.transform.position) / 4);
-                }
-            }
-            if (Input.GetAxis("Mouse ScrollWheel") < 0f)
-            {
-                if (Toggle)
-                {
-                    RaycastPointObject.transform.position = Vector3.Lerp(Camera.current.transform.position, RaycastPointObject.transform.position, .9f);
-                }
-            }
-            if (Input.GetMouseButton(0))
-            {
-                if (Toggle)
-                {
-                    SelectSphere.GetComponent<Renderer>().enabled = true;
-                    if (GrabbedObject == null)
+                    foreach (var RaycastPointObject in RaycastPointObjects)
                     {
-                        if (Physics.Raycast(Camera.current.transform.position, Camera.current.transform.TransformDirection(Vector3.forward), out var hit, 10000))
+                        RaycastPointObject.Value.transform.position += Camera.current.transform.forward * (Vector3.Distance(Camera.current.transform.position, RaycastPointObject.Value.transform.position) / 4);
+                    }
+                }
+                if (Input.GetAxis("Mouse ScrollWheel") < 0f)
+                {
+                    foreach (var RaycastPointObject in RaycastPointObjects)
+                    {
+                        RaycastPointObject.Value.transform.position = Vector3.Lerp(Camera.current.transform.position, RaycastPointObject.Value.transform.position, .9f);
+                    }
+                }
+                if (Input.GetMouseButton(0))
+                {
+                    if (GrabbedObjects.Count == 0)
+                    {
+                        if (Physics.Raycast(Camera.current.transform.position, Camera.current.transform.forward, out var Hit, short.MaxValue))
                         {
+                            SelectSphere.SetActive(true);
                             SelectSphere.transform.localScale = new Vector3(1 * SelectSphereMultiplier, 1 * SelectSphereMultiplier, 1 * SelectSphereMultiplier);
-                            SelectSphere.transform.position = hit.point;
-                            GameObject ObjSync = null;
-                            foreach (var Sync in Resources.FindObjectsOfTypeAll<VRC.SDK3.Components.VRCObjectSync>())
+                            SelectSphere.transform.position = Hit.point;
+                            foreach(var SyncObj in Object.FindObjectsOfType<VRCObjectSync>())
                             {
-                                if (SelectSphere.GetComponent<Collider>().bounds.Contains(Sync.gameObject.transform.position))
+                                if (SelectSphere.GetComponent<Collider>().bounds.Contains(SyncObj.transform.position))
                                 {
-                                    ObjSync = Sync.gameObject;
-                                    break;
+                                    GrabbedObjects.Add(SyncObj.gameObject);
+                                    var RaycastPointObject = new GameObject();
+                                    RaycastPointObject.transform.position = SyncObj.transform.position;
+                                    RaycastPointObject.transform.rotation = SyncObj.transform.rotation;
+                                    RaycastPointObject.transform.parent = Camera.current.transform;
+                                    RaycastPointObjects.Add(SyncObj.gameObject, RaycastPointObject);
                                 }
                             }
-                            foreach (var Sync in Resources.FindObjectsOfTypeAll<VRC_ObjectSync>())
-                            {
-                                if (SelectSphere.GetComponent<Collider>().bounds.Contains(Sync.gameObject.transform.position))
-                                {
-                                    ObjSync = Sync.gameObject;
-                                    break;
-                                }
-                            }
-                            if (ObjSync != null)
-                            {
-                                GrabbedObject = ObjSync.gameObject;
-                                RaycastPointObject.transform.position = GrabbedObject.transform.position;
-                            }
+                        }
+                        else
+                        {
+                            SelectSphere.SetActive(false);
                         }
                     }
                     else
                     {
-                        SelectSphere.GetComponent<Renderer>().enabled = false;
-                        GrabbedObject.transform.position = Vector3.Lerp(GrabbedObject.transform.position, RaycastPointObject.transform.position, .1f);
-                        GrabbedObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
-                        GrabbedObject.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
-                        if (!Networking.IsOwner(Networking.LocalPlayer, GrabbedObject))
+                        SelectSphere.SetActive(false);
+                        foreach(var GrabbedObject in RaycastPointObjects)
                         {
-                            Networking.SetOwner(Networking.LocalPlayer, GrabbedObject);
+                            Networking.SetOwner(Networking.LocalPlayer, GrabbedObject.Key);
+                            GrabbedObject.Key.GetComponent<Rigidbody>().velocity = Vector3.zero;
+                            GrabbedObject.Key.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
+                            if (SmoothToggle)
+                            {
+                                GrabbedObject.Key.transform.position = Vector3.Lerp(GrabbedObject.Key.transform.position, GrabbedObject.Value.transform.position, .1f);
+                                if (RotateWithHead)
+                                {
+                                    GrabbedObject.Key.transform.rotation = Quaternion.Lerp(GrabbedObject.Key.transform.rotation, GrabbedObject.Value.transform.rotation, .1f);
+                                }
+                            }
+                            else
+                            {
+                                GrabbedObject.Key.transform.position = GrabbedObject.Value.transform.position;
+                                if (RotateWithHead)
+                                {
+                                    GrabbedObject.Key.transform.rotation = GrabbedObject.Value.transform.rotation;
+                                }
+                            }
                         }
                     }
                 }
-            }
-            else
-            {
-                SelectSphere.GetComponent<Renderer>().enabled = false;
-                if (GrabbedObject != null)
+                else
                 {
+                    SelectSphere.SetActive(false);
+                    foreach (var GrabbedObject in RaycastPointObjects)
                     if (LaunchToggle)
                     {
-                        GrabbedObject.GetComponent<Rigidbody>().AddForce((RaycastPointObject.transform.position - GrabbedObject.transform.position) * 15, ForceMode.VelocityChange);
+                        GrabbedObject.Key.GetComponent<Rigidbody>().AddForce((GrabbedObject.Value.transform.position - GrabbedObject.Key.transform.position) * 15, ForceMode.VelocityChange);
                     }
-                    GrabbedObject = null;
+                    GrabbedObjects.Clear();
+                    RaycastPointObjects.Clear();
                 }
             }
         }
