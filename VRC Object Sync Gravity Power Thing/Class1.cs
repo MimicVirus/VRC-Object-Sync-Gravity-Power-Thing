@@ -23,7 +23,7 @@ public class Mod : MelonMod
     {
         MelonLogger.Msg("\n\n" +
             "===== CONTROLS =====\n\n" +
-            "[Left CTRL + Left SHIFT + `] To activate mod, left click for selecting and hold to do the cool stuff.\n" +
+            "[Left CTRL + Left SHIFT + 0] To activate mod, left click for selecting and hold to do the cool stuff.\n" +
             "[Left CTRL + Left SHIFT + 1] To toggle launch option (move direction after letting go of it)\n" +
             "[Left CTRL + Left SHIFT + 2] To toggle smooth movement.\n" +
             "[Left CTRL + Left SHIFT + 3] Emergency clear grabbed objects.\n" +
@@ -61,7 +61,7 @@ public class Mod : MelonMod
             {
                 bool Print = false;
                 var MSG = "";
-                if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.BackQuote))
+                if (Input.GetKey(KeyCode.Alpha0))
                 {
                     Toggle = !Toggle;
                     switch (Toggle) { case true: MSG = $"Mod Enabled."; break; case false: MSG = $"Mod Disabled."; break; }
