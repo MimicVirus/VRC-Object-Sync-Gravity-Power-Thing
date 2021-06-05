@@ -61,7 +61,7 @@ public class Mod : MelonMod
             {
                 bool Print = false;
                 var MSG = "";
-                if (Input.GetKey(KeyCode.Alpha0))
+                if (Input.GetKeyDown(KeyCode.Alpha0))
                 {
                     Toggle = !Toggle;
                     switch (Toggle) { case true: MSG = $"Mod Enabled."; break; case false: MSG = $"Mod Disabled."; break; }
