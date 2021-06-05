@@ -6,7 +6,7 @@ DESKTOP ONLY.
 
 # CONTROLS
 
-HOLD(Left CTRL + Left SHIFT) + ` To activate mod, left click for selecting and hold to do the cool shit.
+```HOLD(Left CTRL + Left SHIFT) + ` To activate mod, left click for selecting and hold to do the cool shit.
 HOLD(Left CTRL + Left SHIFT + `) + 1 To toggle launch option (move direction after letting go of it)
 - and = to change orb size.
-Scroll wheel to drag in and out.
+Scroll wheel to drag in and out.```
