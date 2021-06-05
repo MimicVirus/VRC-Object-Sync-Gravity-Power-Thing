@@ -1,4 +1,5 @@
 ﻿using MelonLoader;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using VRC.SDK3.Components;
@@ -130,7 +131,7 @@ public class Mod : MelonMod
                             SelectSphere.SetActive(true);
                             SelectSphere.transform.localScale = new Vector3(1 * SelectSphereMultiplier, 1 * SelectSphereMultiplier, 1 * SelectSphereMultiplier);
                             SelectSphere.transform.position = Hit.point;
-                            foreach(var SyncObj in Object.FindObjectsOfType<VRCObjectSync>())
+                            foreach(var SyncObj in UnityEngine.Object.FindObjectsOfType<VRCObjectSync>())
                             {
                                 if (SelectSphere.GetComponent<Collider>().bounds.Contains(SyncObj.transform.position))
                                 {
@@ -154,8 +155,11 @@ public class Mod : MelonMod
                         foreach(var GrabbedObject in RaycastPointObjects)
                         {
                             Networking.SetOwner(Networking.LocalPlayer, GrabbedObject.Key);
-                            GrabbedObject.Key.GetComponent<Rigidbody>().velocity = Vector3.zero;
-                            GrabbedObject.Key.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
+                            if (GrabbedObject.Key.GetComponent<Rigidbody>() != null)
+                            {
+                                GrabbedObject.Key.GetComponent<Rigidbody>().velocity = Vector3.zero;
+                                GrabbedObject.Key.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
+                            }
                             if (SmoothToggle)
                             {
                                 GrabbedObject.Key.transform.position = Vector3.Lerp(GrabbedObject.Key.transform.position, GrabbedObject.Value.transform.position, .1f);
@@ -179,17 +183,20 @@ public class Mod : MelonMod
                 {
                     SelectSphere.SetActive(false);
                     foreach (var GrabbedObject in RaycastPointObjects)
-                    if (LaunchToggle)
                     {
-                        GrabbedObject.Key.GetComponent<Rigidbody>().AddForce((GrabbedObject.Value.transform.position - GrabbedObject.Key.transform.position) * 15, ForceMode.VelocityChange);
+                        if (GrabbedObject.Key.GetComponent<Rigidbody>() != null)
+                        {
+                            GrabbedObject.Key.GetComponent<Rigidbody>().AddForce((GrabbedObject.Value.transform.position - GrabbedObject.Key.transform.position) * 15, ForceMode.VelocityChange);
+                        }
                     }
                     GrabbedObjects.Clear();
                     RaycastPointObjects.Clear();
                 }
             }
         }
-        catch
+        catch(Exception ex)
         {
+            MelonLogger.Error($"IGNORE THIS ERROR!!! ONLY FOR DEBUGGING THIS MOD. {ex}");
         }
     }
 }
