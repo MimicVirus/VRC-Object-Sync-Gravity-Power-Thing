@@ -8,6 +8,14 @@ DESKTOP ONLY.
 
 Controls are printed in the console.
 
+# LOADER
+
+Uses MelonLoader v0.3.0
+
+DOWNLOAD:
+https://github.com/LavaGang/MelonLoader/releases
+
+
 # DISCLAIMER
 
 DO NOT USE MY CODE FOR YOUR OWN CLIENTS.
