@@ -23,7 +23,7 @@ public class Mod : MelonMod
     {
         MelonLogger.Msg("\n\n" +
             "===== CONTROLS =====\n\n" +
-            "[Left CTRL + Left SHIFT + `] To activate mod, left click for selecting and hold to do the cool shit.\n" +
+            "[Left CTRL + Left SHIFT + `] To activate mod, left click for selecting and hold to do the cool stuff.\n" +
             "[Left CTRL + Left SHIFT + 1] To toggle launch option (move direction after letting go of it)\n" +
             "[Left CTRL + Left SHIFT + 2] To toggle smooth movement.\n" +
             "[Left CTRL + Left SHIFT + 3] Emergency clear grabbed objects.\n" +
