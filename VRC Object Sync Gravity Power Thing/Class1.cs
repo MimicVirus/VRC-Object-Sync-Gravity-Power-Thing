@@ -1,15 +1,15 @@
 ﻿using MelonLoader;
 using UnityEngine;
 using VRC.SDKBase;
-using VRC.Udon;
 using VRCSDK2;
 
-[assembly: MelonInfo(typeof(Faggot), "Faggot Gravity Gun Thing", "69", "Not Beretta")]
+[assembly: MelonInfo(typeof(Mod), "Faggot Gravity Gun Thing", "1", "Not Beretta", "https://github.com/cutielovesyou/VRC-Object-Sync-Gravity-Power-Thing")]
 [assembly: MelonGame("VRChat", "VRChat")]
 
-public class Faggot : MelonMod
+public class Mod : MelonMod
 {
     private bool Toggle = false;
+    private bool LaunchToggle = true;
     private GameObject GrabbedObject;
     private GameObject RaycastPointObject;
     private GameObject SelectSphere;
@@ -17,14 +17,13 @@ public class Faggot : MelonMod
 
     public override void OnApplicationStart()
     {
-        MelonLogger.Msg("Hold Left CTRL 6 and press 9 to activate mod, left click for selecting and hold to do the cool shit. - and = to change orb size. Scroll wheel to drag in and out.");
+        MelonLogger.Msg("\n\n===== CONTROLS =====[HOLD(Left CTRL + Left SHIFT) + `] To activate mod, left click for selecting and hold to do the cool shit.\n[HOLD(Left CTRL + Left SHIFT + `) + 1] To toggle launch option (move direction after letting go of it)\n- and = to change orb size.\nScroll wheel to drag in and out.\n\n");
     }
 
     public override void OnUpdate()
     {
         try
         {
-
             if (SelectSphere == null)
             {
                 SelectSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -50,7 +49,17 @@ public class Faggot : MelonMod
                 RaycastPointObject = new GameObject();
                 RaycastPointObject.transform.parent = Camera.current.transform;
             }
-            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.Alpha6) && Input.GetKeyDown(KeyCode.Alpha9))
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.BackQuote))
+            {
+                Toggle = !Toggle;
+                var MSG = "";
+                switch (Toggle) { case true: MSG = $"Mod Enabled."; break; case false: MSG = $"Mod Disabled."; break; }
+                MelonLogger.Msg(MSG);
+            }
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift) && Input.GetKey(KeyCode.BackQuote) && Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                LaunchToggle = !LaunchToggle;
+            }
             {
                 Toggle = !Toggle;
                 var MSG = "";
@@ -89,7 +98,7 @@ public class Faggot : MelonMod
             {
                 if (Toggle)
                 {
-                    SelectSphere.SetActive(true);
+                    SelectSphere.GetComponent<Renderer>().enabled = true;
                     if (GrabbedObject == null)
                     {
                         if (Physics.Raycast(Camera.current.transform.position, Camera.current.transform.TransformDirection(Vector3.forward), out var hit, 10000))
@@ -122,29 +131,32 @@ public class Faggot : MelonMod
                     }
                     else
                     {
-                        SelectSphere.SetActive(false);
+                        SelectSphere.GetComponent<Renderer>().enabled = false;
+                        GrabbedObject.transform.position = Vector3.Lerp(GrabbedObject.transform.position, RaycastPointObject.transform.position, .1f);
+                        GrabbedObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
+                        GrabbedObject.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
                         if (!Networking.IsOwner(Networking.LocalPlayer, GrabbedObject))
                         {
                             Networking.SetOwner(Networking.LocalPlayer, GrabbedObject);
                         }
-                        GrabbedObject.GetComponent<Rigidbody>().velocity = Vector3.zero;
-                        GrabbedObject.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
-                        GrabbedObject.transform.position = RaycastPointObject.transform.position;
                     }
                 }
             }
             else
             {
-                SelectSphere.SetActive(false);
+                SelectSphere.GetComponent<Renderer>().enabled = false;
                 if (GrabbedObject != null)
                 {
+                    if (LaunchToggle)
+                    {
+                        GrabbedObject.GetComponent<Rigidbody>().AddForce((RaycastPointObject.transform.position - GrabbedObject.transform.position) * 15, ForceMode.VelocityChange);
+                    }
                     GrabbedObject = null;
                 }
             }
         }
         catch
         {
-
         }
     }
 }
