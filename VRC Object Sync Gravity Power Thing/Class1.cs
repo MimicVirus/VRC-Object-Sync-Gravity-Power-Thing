@@ -17,7 +17,7 @@ public class Mod : MelonMod
 
     public override void OnApplicationStart()
     {
-        MelonLogger.Msg("\n\n===== CONTROLS =====[HOLD(Left CTRL + Left SHIFT) + `] To activate mod, left click for selecting and hold to do the cool shit.\n[HOLD(Left CTRL + Left SHIFT + `) + 1] To toggle launch option (move direction after letting go of it)\n- and = to change orb size.\nScroll wheel to drag in and out.\n\n");
+        MelonLogger.Msg("\n\n===== CONTROLS =====\n\n[HOLD(Left CTRL + Left SHIFT) + `] To activate mod, left click for selecting and hold to do the cool shit.\n[HOLD(Left CTRL + Left SHIFT + `) + 1] To toggle launch option (move direction after letting go of it)\n- and = to change orb size.\nScroll wheel to drag in and out.\n\n");
     }
 
     public override void OnUpdate()
@@ -59,12 +59,6 @@ public class Mod : MelonMod
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftShift) && Input.GetKey(KeyCode.BackQuote) && Input.GetKeyDown(KeyCode.Alpha1))
             {
                 LaunchToggle = !LaunchToggle;
-            }
-            {
-                Toggle = !Toggle;
-                var MSG = "";
-                switch (Toggle) { case true: MSG = $"Mod Enabled."; break; case false: MSG = $"Mod Disabled."; break; }
-                MelonLogger.Msg(MSG);
             }
             if (Input.GetKeyDown(KeyCode.Minus))
             {
