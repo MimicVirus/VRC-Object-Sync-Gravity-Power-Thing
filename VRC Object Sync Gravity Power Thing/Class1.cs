@@ -29,7 +29,8 @@ public class Mod : MelonMod
             "[Return (Enter) + 2] To toggle smooth movement.\n" +
             "[Return (Enter) + 3] Emergency clear grabbed objects.\n" +
             "[Return (Enter) + 4] Reset ball size.\n" +
-            "[Return (Enter) + 5] to toggle rotation with head.\n" +
+            "[Return (Enter) + 5] To toggle rotation with head.\n" +
+            "[Return (Enter) + 6] Max ball size.\n" +
             "[- or =] to change orb size.\n" +
             "Scroll wheel to drag in and out.\n\n");
     }
@@ -92,6 +93,10 @@ public class Mod : MelonMod
                 if (Input.GetKeyDown(KeyCode.Alpha5))
                 {
                     RotateWithHead = !RotateWithHead;
+                }
+                if (Input.GetKeyDown(KeyCode.Alpha6))
+                {
+                    SelectSphereMultiplier = ushort.MaxValue;
                 }
                 if (Print)
                 {
