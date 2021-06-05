@@ -148,9 +148,9 @@ public class Mod : MelonMod
                     {
                         GrabbedObject.GetComponent<Rigidbody>().AddForce((RaycastPointObject.transform.position - GrabbedObject.transform.position) * 15, ForceMode.VelocityChange);
                     }
+                    GrabbedObject = null;
                 }
             }
-            GrabbedObject = null;
         }
         catch
         {
