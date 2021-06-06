@@ -58,6 +58,9 @@ public class Mod : MelonMod
                 IndexY += 25;
             }
         }
+        GUI.color = Color.white;
+        GUI.Label(new Rect(10, IndexY, 200, 20), $"Select Sphere Size: {SelectSphereMultiplier}");
+        GUI.Label(new Rect(10, IndexY + 25, 200, 20), $"Grabbed Objects Count: {GrabbedObjects.Count}");
     }
 
     public override void OnUpdate()
