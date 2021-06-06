@@ -16,9 +16,10 @@ public class Mod : MelonMod
     public static bool LaunchToggle = true;
     public static bool SmoothToggle = true;
     public static bool RotateWithHead = true;
-    private List<GameObject> GrabbedObjects = new List<GameObject>();
     private Dictionary<GameObject, GameObject> RaycastPointObjects = new Dictionary<GameObject, GameObject>();
     private GameObject SelectSphere;
+    private VRC.SDKBase.VRC_Trigger vrc_Trigger;
+    private VRC.SDKBase.VRC_EventHandler.VrcEvent vrcEvent;
     private float SelectSphereMultiplier = 5;
 
     public override void OnApplicationStart()
@@ -60,13 +61,27 @@ public class Mod : MelonMod
         }
         GUI.color = Color.white;
         GUI.Label(new Rect(10, IndexY, 200, 20), $"Select Sphere Size: {SelectSphereMultiplier}");
-        GUI.Label(new Rect(10, IndexY + 25, 200, 20), $"Grabbed Objects Count: {GrabbedObjects.Count}");
+        GUI.Label(new Rect(10, IndexY + 25, 200, 20), $"Grabbed Objects Count: {RaycastPointObjects.Count}");
     }
 
     public override void OnUpdate()
     {
         try
         {
+            if (vrc_Trigger == null)
+            {
+                GameObject gameObject = new GameObject();
+                vrc_Trigger = gameObject.AddComponent<VRCSDK2.VRC_Trigger>();
+
+                VRC.SDKBase.VRC_Trigger.TriggerEvent triggerEvent = new VRC.SDKBase.VRC_Trigger.TriggerEvent();
+                triggerEvent.BroadcastType = VRC.SDKBase.VRC_EventHandler.VrcBroadcastType.Always;
+                triggerEvent.TriggerType = VRC.SDKBase.VRC_Trigger.TriggerType.OnInteract;
+                vrc_Trigger.Triggers.Add(triggerEvent);
+
+                vrcEvent = new VRC.SDKBase.VRC_EventHandler.VrcEvent();
+                vrcEvent.EventType = VRC.SDKBase.VRC_EventHandler.VrcEventType.SpawnObject;
+                triggerEvent.Events.Add(vrcEvent);
+            }
             if (SelectSphere == null)
             {
                 SelectSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -112,7 +127,6 @@ public class Mod : MelonMod
                 }
                 if (Input.GetKeyDown(KeyCode.Alpha3))
                 {
-                    GrabbedObjects.Clear();
                     RaycastPointObjects.Clear();
                 }
                 if (Input.GetKeyDown(KeyCode.Alpha4))
@@ -129,7 +143,7 @@ public class Mod : MelonMod
                 }
                 if (Input.GetKeyDown(KeyCode.Alpha7))
                 {
-                    VRCPlayer.field_Internal_Static_VRCPlayer_0.transform.position = UnityEngine.Object.FindObjectOfType<VRC.SDKBase.VRC_SceneDescriptor>().spawns.GetEnumerator().Current.position;
+                    VRCPlayer.field_Internal_Static_VRCPlayer_0.transform.position = UnityEngine.Object.FindObjectOfType<VRC.SDKBase.VRC_SceneDescriptor>().spawns[0].transform.position;
                 }
                 if (Input.GetKeyDown(KeyCode.Alpha8))
                 {
@@ -137,35 +151,20 @@ public class Mod : MelonMod
                     foreach (var DP in UnityEngine.Object.FindObjectOfType<VRC.SDKBase.VRC_SceneDescriptor>().DynamicPrefabs)
                     {
                         MelonLogger.Msg($"{Index} - {DP.name}");
+                        Index += 1;
                     }
                 }
                 if (Input.GetKey(KeyCode.Alpha9))
                 {
-                    GameObject gameObject = new GameObject();
-                    VRC.SDKBase.VRC_Trigger.TriggerEvent triggerEvent = new VRC.SDKBase.VRC_Trigger.TriggerEvent();
-                    VRC.SDKBase.VRC_EventHandler.VrcEvent vrcEvent = new VRC.SDKBase.VRC_EventHandler.VrcEvent();
-                    VRCSDK2.VRC_Trigger vrc_Trigger = gameObject.AddComponent<VRCSDK2.VRC_Trigger>();
-                    vrcEvent.EventType = VRC.SDKBase.VRC_EventHandler.VrcEventType.SpawnObject;
-                    vrc_Trigger.Triggers.Add(triggerEvent);
-                    triggerEvent.Events.Add(vrcEvent);
-                    triggerEvent.BroadcastType = VRC.SDKBase.VRC_EventHandler.VrcBroadcastType.Always;
-                    triggerEvent.TriggerType = VRC.SDKBase.VRC_Trigger.TriggerType.OnInteract;
-                    vrc_Trigger.Interact();
                     foreach (var DP in UnityEngine.Object.FindObjectOfType<VRC.SDKBase.VRC_SceneDescriptor>().DynamicPrefabs)
                     {
-                        var _DP = GameObject.Instantiate(DP.gameObject);
                         if (Physics.Raycast(Camera.current.transform.position, Camera.current.transform.forward, out var Hit, short.MaxValue))
                         {
                             vrcEvent.ParameterString = DP.name;
-                            gameObject.transform.position = Hit.point;
-                            vrcEvent.ParameterObjects = new UnhollowerBaseLib.Il2CppReferenceArray<GameObject>(new GameObject[] { gameObject });
+                            vrc_Trigger.gameObject.transform.position = Hit.point;
                             vrc_Trigger.Interact();
                         }
                     }
-                }
-                if (Input.GetKeyDown(KeyCode.Alpha7))
-                {
-                    VRCPlayer.field_Internal_Static_VRCPlayer_0.transform.position = UnityEngine.Object.FindObjectOfType<VRC.SDKBase.VRC_SceneDescriptor>().spawns.GetEnumerator().Current.position;
                 }
                 if (Print)
                 {
@@ -198,18 +197,28 @@ public class Mod : MelonMod
                 }
                 if (Input.GetMouseButton(1))
                 {
-                    if (GrabbedObjects.Count == 0)
+                    if (RaycastPointObjects.Count == 0)
                     {
                         if (Physics.Raycast(Camera.current.transform.position, Camera.current.transform.forward, out var Hit, short.MaxValue))
                         {
-                            SelectSphere.SetActive(true);
                             SelectSphere.transform.localScale = new Vector3(1 * SelectSphereMultiplier, 1 * SelectSphereMultiplier, 1 * SelectSphereMultiplier);
+                            SelectSphere.SetActive(true);
                             SelectSphere.transform.position = Hit.point;
                             foreach(var SyncObj in UnityEngine.Object.FindObjectsOfType<VRCObjectSync>())
                             {
                                 if (SelectSphere.GetComponent<Collider>().bounds.Contains(SyncObj.transform.position))
                                 {
-                                    GrabbedObjects.Add(SyncObj.gameObject);
+                                    var RaycastPointObject = new GameObject();
+                                    RaycastPointObject.transform.position = SyncObj.transform.position;
+                                    RaycastPointObject.transform.rotation = SyncObj.transform.rotation;
+                                    RaycastPointObject.transform.parent = Camera.current.transform;
+                                    RaycastPointObjects.Add(SyncObj.gameObject, RaycastPointObject);
+                                }
+                            }
+                            foreach(var SyncObj in UnityEngine.Object.FindObjectsOfType<VRC_ObjectSync>())
+                            {
+                                if (SelectSphere.GetComponent<Collider>().bounds.Contains(SyncObj.transform.position))
+                                {
                                     var RaycastPointObject = new GameObject();
                                     RaycastPointObject.transform.position = SyncObj.transform.position;
                                     RaycastPointObject.transform.rotation = SyncObj.transform.rotation;
@@ -263,7 +272,6 @@ public class Mod : MelonMod
                             GrabbedObject.Key.GetComponent<Rigidbody>().AddForce((GrabbedObject.Value.transform.position - GrabbedObject.Key.transform.position) * 15, ForceMode.VelocityChange);
                         }
                     }
-                    GrabbedObjects.Clear();
                     RaycastPointObjects.Clear();
                 }
             }
